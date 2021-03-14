@@ -1,17 +1,35 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {Button, FormControl, Input, InputLabel} from '@material-ui/core';
+import Todo from './Todo';
+import db from './firebase'
+import firebase from 'firebase'
 
 function App() {
-  const [todos, setTodos] = useState(["Take dog for a walk", "Take the rubbish out","Fire base is awesome", "react hook is new"])
+  const [todos, setTodos] = useState([])
   const [input, setInput] = useState("");
-  console.log(input);
+  // console.log(input);
+
+  //this loads once the app loads i.e it loads once
+  useEffect(()=> {
+    //this code fires when app.js loads
+    db.collection('todos').orderBy('timestamp', 'desc').onSnapshot(snapshot=> {
+      setTodos(snapshot.docs.map(doc=>doc.data().todo))
+    })
+  }, [])
 
   const addTodo=(e)=> {
-    e.preventDefault(); //stops referesh
-    console.log(input);
-    setTodos([...todos, input]) //set todos
-    setInput(""); //clear out the input stage
+    // e.preventDefault(); //stops referesh
+    // console.log(input);
+    // setTodos([...todos, input]) //set todos
+    // setInput(""); //clear out the input stage
+    e.preventDefault();
+    db.collection('todos').add({
+      todo: input,
+      timestamp:firebase.firestore.FieldValue.serverTimestamp()
+    })
+
+    setInput("");
     
   }
 
@@ -39,7 +57,7 @@ function App() {
 
       <ul>
         {todos.map(todo=> (
-          <li>{todo}</li>
+          <Todo text={todo}/>
         ))}
       </ul>
     </div>
